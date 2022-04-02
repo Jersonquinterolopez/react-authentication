@@ -1,15 +1,16 @@
-import { MongoClient } from 'mongodb';
-
-let client;
+import mongoose from 'mongoose';
+import config from '../src/config/index.js';
 
 export const initializeDbConnection = async () => {
-    client = await MongoClient.connect('mongodb://localhost:27017', {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-    });
-}
-
-export const getDbConnection = dbName => {
-    const db = client.db(dbName);
-    return db;
-}
+  mongoose.connect(
+    config.dbConnection,
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    },
+    (err) => {
+      if (err) return console.error(err);
+      console.log('MongoDB connection stablished');
+    }
+  );
+};
