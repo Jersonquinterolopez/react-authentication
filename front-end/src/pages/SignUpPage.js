@@ -4,9 +4,9 @@ import axios from 'axios';
 import { useToken } from '../features/auth/useToken.js';
 
 export const SignUpPage = () => {
-  const [token, setToken] = useToken();
+  const [, setToken] = useToken();
 
-  const [errorMessage, setErrorMessage] = useState('');
+  // const [errorMessage, setErrorMessage] = useState('');
   const [emailValue, setEmailValue] = useState('');
   const [passwordValue, setPasswordValue] = useState('');
   const [confirmPasswordValue, setConfirmPasswordValue] = useState('');
@@ -26,7 +26,7 @@ export const SignUpPage = () => {
   return (
     <div className="content-container">
       <h1>Sign Up</h1>
-      {errorMessage && <div className="fail">{errorMessage}</div>}
+      {/* {errorMessage && <div className="fail">{errorMessage}</div>} */}
       <input
         type="text"
         value={emailValue}
