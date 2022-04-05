@@ -15,14 +15,15 @@ export const EmailVerificationCodePage = () => {
 
   const onSubmitVerificationString = async () => {
     try {
-      const response = axios.put('/api/verify-email', {
+      const response = await axios.put('/api/verify-email', {
         email,
         verificationString,
       });
-      const { token } = response.data;
+      const { token } = await response.data;
       setToken(token);
       setIsSuccess(true);
     } catch (error) {
+      console.log(error);
       setIsFailure(true);
     }
   };
