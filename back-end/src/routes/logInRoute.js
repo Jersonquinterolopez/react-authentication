@@ -1,7 +1,13 @@
 import { User } from '../models/userModel.js';
-import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import config from '../config/index.js';
+import {
+  AuthenticationDetails,
+  CognitoUserPool,
+  CognitoUserAttribute,
+  CognitoUser,
+} from 'amazon-cognito-identity-js';
+import { awsUserPool } from '../utils/awsUserPool.js';
 
 export const logInRoute = {
   path: '/api/login',
@@ -9,38 +15,33 @@ export const logInRoute = {
   handler: async (req, res) => {
     const { email, password } = req.body;
 
-    // find the user
-    const user = await User.findOne({ email });
+    new CognitoUser({ Username: email, Pool: awsUserPool }).authenticateUser(
+      new AuthenticationDetails({ Username: email, Password: password }),
+      {
+        onSuccess: async (result) => {
+          // find the user
+          const user = await User.findOne({ email });
+          const { _id: id, isVerified, info } = user;
 
-    // check if user exists
-    if (!user)
-      return res.status(401).json({
-        msg: 'Unauthorized',
-      });
-
-    // check if password is correct
-    const { _id: id, isVerified, passwordHash, info } = user;
-    const isPasswordValid = await bcrypt.compare(password, passwordHash);
-
-    if (isPasswordValid) {
-      // create token
-      const token = jwt.sign(
-        { id, isVerified, email, info },
-        config.authJwtSecret,
-        {
-          expiresIn: '2d',
+          jwt.sign(
+            { id, isVerified, email, info },
+            config.authJwtSecret,
+            {
+              expiresIn: '2d',
+            },
+            (err, token) => {
+              if (err) {
+                return res.status(500);
+              }
+              res.status(200).json({ token });
+            }
+          );
         },
-        (err, token) => {
-          if (err) {
-            return res.status(500).send(err);
-          }
-          res.status(200).json({ token });
-        }
-      );
-    } else {
-      return res.status(401).json({
-        msg: 'Invalid Credentials',
-      });
-    }
+        onFailure: (err) => {
+          console.log(err);
+          return res.status(401);
+        },
+      }
+    );
   },
 };
